@@ -28,10 +28,3 @@ Collision Detection: Collisions between the ball and the paddles, as well as the
 
 Scorekeeping: Scores for each player are displayed using Pygame's font rendering functionality.
 
-Future Enhancements:
-This basic version of Pong can be expanded and improved in several ways:
-
-Implementing sound effects for ball bounces and scoring events.
-Adding visual effects like particle effects or animations.
-Implementing more advanced AI for single-player mode.
-Adding power-ups or special moves to introduce variety and strategy.
