@@ -1,0 +1,60 @@
+import sqlite3
+
+# Replace with the path to your actual database
+DB_PATH = 'snapchat_database.db'
+USER_ID = 'your_user_id'
+CURRENT_DEVICE_ID = 'current_device_id'
+
+def connect_to_db():
+    """Connect to the Snapchat database."""
+    try:
+        connection = sqlite3.connect(DB_PATH)
+        print("Connected to the database successfully.")
+        return connection
+    except sqlite3.Error as e:
+        print(f"Database connection error: {e}")
+        return None
+
+def fetch_device_associations(conn):
+    """Fetch devices associated with the user."""
+    cursor = conn.cursor()
+    cursor.execute("SELECT device_id FROM device_associations WHERE user_id = ?", (USER_ID,))
+    devices = cursor.fetchall()
+    print(f"Associated devices: {devices}")
+    return devices
+
+def remove_old_devices(conn, devices):
+    """Remove all devices except the current one."""
+    cursor = conn.cursor()
+    for device in devices:
+        if device[0] != CURRENT_DEVICE_ID:
+            cursor.execute("DELETE FROM device_associations WHERE user_id = ? AND device_id = ?", (USER_ID, device[0]))
+    conn.commit()
+    print("Old device associations cleared.")
+
+def clear_sessions(conn):
+    """Reset session tokens."""
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM user_sessions WHERE user_id = ?", (USER_ID,))
+    conn.commit()
+    print("All sessions have been reset.")
+
+def clear_account_flags(conn):
+    """Remove any account restrictions."""
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM account_flags WHERE user_id = ?", (USER_ID,))
+    conn.commit()
+    print("Account flags cleared.")
+
+def main():
+    conn = connect_to_db()
+    if conn:
+        devices = fetch_device_associations(conn)
+        remove_old_devices(conn, devices)
+        clear_sessions(conn)
+        clear_account_flags(conn)
+        conn.close()
+        print("Device association issue resolved.")
+
+if __name__ == "__main__":
+    main()
