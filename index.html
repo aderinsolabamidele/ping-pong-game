@@ -3,44 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ping Pong Game</title>
+    <title>Pong Game</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            display: flex; flex-direction: column; align-items: center; 
-            justify-content: center; height: 100vh; background: #1a1a2e; 
-            color: white; font-family: 'Arial', sans-serif; 
-        }
-        canvas { 
-            background: linear-gradient(45deg, #0f3460, #16213e); 
-            border: 4px solid #e94560; border-radius: 10px; box-shadow: 0 0 20px #e94560;
-        }
-        .buttons { margin-bottom: 20px; }
-        button {
-            background: linear-gradient(45deg, #e94560, #ff6363);
-            border: none; padding: 12px 20px; color: white; font-size: 16px;
-            border-radius: 8px; cursor: pointer; margin: 5px; transition: 0.3s;
-            box-shadow: 0 4px 8px rgba(255, 99, 99, 0.5);
-        }
-        button:hover { transform: scale(1.1); background: #ff6363; }
-        .scoreboard {
-            font-size: 24px; margin: 20px; padding: 10px 20px; 
-            background: rgba(255, 255, 255, 0.1); border-radius: 8px;
-            box-shadow: 0 0 15px rgba(255, 99, 99, 0.5);
-        }
+        body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: black; color: white; font-family: Arial, sans-serif; }
+        canvas { background: black; border: 2px solid white; }
+        button { margin: 10px; padding: 10px; font-size: 16px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <h1 style="text-shadow: 0 0 10px #e94560;">✨ Neon Pong Game ✨</h1>
-    <div class="buttons">
-        <button onclick="startGame('2P')">🎮 Two Players</button>
-        <button onclick="startGame('AI')">🤖 Play Against AI</button>
-    </div>
+    <h1>Pong Game</h1>
+    <button onclick="startGame('2P')">Two Players</button>
+    <button onclick="startGame('AI')">Play Against AI</button>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <div class="scoreboard">
-        <h2>🏆 Past Scores 🏆</h2>
-        <ul id="scoreList"></ul>
-    </div>
+    <h2>Past Scores</h2>
+    <ul id="scoreList"></ul>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
@@ -84,21 +61,27 @@
         });
 
         function update() {
+            // Move paddles
             if (wPressed && player1Y > 0) player1Y -= paddleSpeed;
             if (sPressed && player1Y < canvas.height - paddleHeight) player1Y += paddleSpeed;
+
             if (gameMode === "2P") {
                 if (upPressed && player2Y > 0) player2Y -= paddleSpeed;
                 if (downPressed && player2Y < canvas.height - paddleHeight) player2Y += paddleSpeed;
             } else if (gameMode === "AI") {
+                // AI movement (follows ball)
                 if (player2Y + paddleHeight / 2 < ballY) player2Y += aiSpeed;
                 if (player2Y + paddleHeight / 2 > ballY) player2Y -= aiSpeed;
             }
 
+            // Move ball
             ballX += ballSpeedX;
             ballY += ballSpeedY;
 
+            // Ball collision with top/bottom
             if (ballY <= 0 || ballY >= canvas.height - ballSize) ballSpeedY *= -1;
 
+            // Ball collision with paddles
             if (
                 (ballX <= paddleWidth && ballY >= player1Y && ballY <= player1Y + paddleHeight) ||
                 (ballX >= canvas.width - paddleWidth - ballSize && ballY >= player2Y && ballY <= player2Y + paddleHeight)
@@ -106,6 +89,7 @@
                 ballSpeedX *= -1;
             }
 
+            // Ball out of bounds (scoring)
             if (ballX <= 0) {
                 player2Score++;
                 storeScore();
@@ -135,15 +119,17 @@
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+            // Draw paddles
             ctx.fillStyle = "white";
             ctx.fillRect(0, player1Y, paddleWidth, paddleHeight);
             ctx.fillRect(canvas.width - paddleWidth, player2Y, paddleWidth, paddleHeight);
 
-            ctx.fillStyle = "#e94560";
+            // Draw ball
             ctx.beginPath();
             ctx.arc(ballX + ballSize / 2, ballY + ballSize / 2, ballSize / 2, 0, Math.PI * 2);
             ctx.fill();
 
+            // Draw scores
             ctx.font = "36px Arial";
             ctx.fillText(`${player1Score} - ${player2Score}`, canvas.width / 2 - 30, 50);
         }
@@ -163,4 +149,5 @@
     </script>
 </body>
 </html>
+
 
