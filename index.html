@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong Game</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { display: flex; justify-content: center; align-items: center; height: 100vh; background: black; }
+        canvas { background: black; border: 2px solid white; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Game variables
+        const paddleWidth = 10, paddleHeight = 100, ballSize = 20;
+        let player1Y = canvas.height / 2 - paddleHeight / 2;
+        let player2Y = canvas.height / 2 - paddleHeight / 2;
+        let player1Score = 0, player2Score = 0;
+        
+        let ballX = canvas.width / 2, ballY = canvas.height / 2;
+        let ballSpeedX = 5 * (Math.random() > 0.5 ? 1 : -1);
+        let ballSpeedY = 5 * (Math.random() > 0.5 ? 1 : -1);
+        const paddleSpeed = 5;
+        let upPressed = false, downPressed = false, wPressed = false, sPressed = false;
+
+        // Handle keyboard input
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "ArrowUp") upPressed = true;
+            if (event.key === "ArrowDown") downPressed = true;
+            if (event.key === "w") wPressed = true;
+            if (event.key === "s") sPressed = true;
+        });
+
+        document.addEventListener("keyup", (event) => {
+            if (event.key === "ArrowUp") upPressed = false;
+            if (event.key === "ArrowDown") downPressed = false;
+            if (event.key === "w") wPressed = false;
+            if (event.key === "s") sPressed = false;
+        });
+
+        // Update game state
+        function update() {
+            // Move paddles
+            if (wPressed && player1Y > 0) player1Y -= paddleSpeed;
+            if (sPressed && player1Y < canvas.height - paddleHeight) player1Y += paddleSpeed;
+            if (upPressed && player2Y > 0) player2Y -= paddleSpeed;
+            if (downPressed && player2Y < canvas.height - paddleHeight) player2Y += paddleSpeed;
+
+            // Move ball
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            // Ball collision with top/bottom
+            if (ballY <= 0 || ballY >= canvas.height - ballSize) ballSpeedY *= -1;
+
+            // Ball collision with paddles
+            if (
+                (ballX <= paddleWidth && ballY >= player1Y && ballY <= player1Y + paddleHeight) ||
+                (ballX >= canvas.width - paddleWidth - ballSize && ballY >= player2Y && ballY <= player2Y + paddleHeight)
+            ) {
+                ballSpeedX *= -1;
+            }
+
+            // Ball out of bounds (scoring)
+            if (ballX <= 0) {
+                player2Score++;
+                resetBall();
+            }
+            if (ballX >= canvas.width - ballSize) {
+                player1Score++;
+                resetBall();
+            }
+        }
+
+        function resetBall() {
+            ballX = canvas.width / 2;
+            ballY = canvas.height / 2;
+            ballSpeedX = 5 * (Math.random() > 0.5 ? 1 : -1);
+            ballSpeedY = 5 * (Math.random() > 0.5 ? 1 : -1);
+        }
+
+        // Draw everything
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw paddles
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, player1Y, paddleWidth, paddleHeight);
+            ctx.fillRect(canvas.width - paddleWidth, player2Y, paddleWidth, paddleHeight);
+
+            // Draw ball
+            ctx.beginPath();
+            ctx.arc(ballX + ballSize / 2, ballY + ballSize / 2, ballSize / 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw scores
+            ctx.font = "36px Arial";
+            ctx.fillText(`${player1Score} - ${player2Score}`, canvas.width / 2 - 30, 50);
+        }
+
+        // Game loop
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
