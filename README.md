@@ -28,3 +28,5 @@ Collision Detection: Collisions between the ball and the paddles, as well as the
 
 Scorekeeping: Scores for each player are displayed using Pygame's font rendering functionality.
 
+Where ping pong game is deployed:https://aderinsolabamidele.github.io/ping-pong-game/
+
