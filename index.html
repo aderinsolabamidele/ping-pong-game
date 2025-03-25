@@ -8,25 +8,33 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: black; color: white; font-family: Arial, sans-serif; }
         canvas { background: black; border: 2px solid white; }
-        button { margin: 10px; padding: 10px; font-size: 16px; cursor: pointer; }
+        button, input {
+            margin: 10px; padding: 10px; font-size: 16px; cursor: pointer; border-radius: 5px;
+        }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
     <h1>Pong Game</h1>
-    <button onclick="startGame('2P')">Two Players</button>
-    <button onclick="startGame('AI')">Play Against AI</button>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="nameInput">
+        <input type="text" id="player1Name" placeholder="Enter Player 1 Name">
+        <input type="text" id="player2Name" placeholder="Enter Player 2 / AI Name">
+        <button onclick="startGame('2P')">Two Players</button>
+        <button onclick="startGame('AI')">Play Against AI</button>
+    </div>
+    <canvas id="gameCanvas" width="800" height="600" class="hidden"></canvas>
     <h2>Past Scores</h2>
     <ul id="scoreList"></ul>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
+        const nameInputDiv = document.getElementById("nameInput");
 
         // Game variables
         const paddleWidth = 10, paddleHeight = 100, ballSize = 20;
-        let player1Y, player2Y, player1Score, player2Score, gameMode;
-        let ballX, ballY, ballSpeedX, ballSpeedY;
+        let player1Y, player2Y, player1Score, player2Score, gameMode, player1Name, player2Name;
+        let ballX, ballY, ballSpeedX, ballSpeedY, roundCount;
         const paddleSpeed = 6, aiSpeed = 4;
         let upPressed = false, downPressed = false, wPressed = false, sPressed = false;
 
@@ -35,6 +43,7 @@
             player2Y = canvas.height / 2 - paddleHeight / 2;
             player1Score = 0;
             player2Score = 0;
+            roundCount = 0;
             resetBall();
         }
 
@@ -92,19 +101,29 @@
             // Ball out of bounds (scoring)
             if (ballX <= 0) {
                 player2Score++;
-                storeScore();
+                roundCount++;
+                checkGameOver();
                 resetBall();
             }
             if (ballX >= canvas.width - ballSize) {
                 player1Score++;
-                storeScore();
+                roundCount++;
+                checkGameOver();
                 resetBall();
+            }
+        }
+
+        function checkGameOver() {
+            if (roundCount >= 3) {
+                storeScore();
+                alert(`Game Over! Winner: ${player1Score > player2Score ? player1Name : player2Name}`);
+                location.reload();
             }
         }
 
         function storeScore() {
             const scores = JSON.parse(localStorage.getItem("pongScores")) || [];
-            const newScore = `Player 1: ${player1Score} - Player 2: ${player2Score}`;
+            const newScore = `${player1Name}: ${player1Score} - ${player2Name}: ${player2Score}`;
             scores.push(newScore);
             localStorage.setItem("pongScores", JSON.stringify(scores));
             displayScores();
@@ -130,8 +149,8 @@
             ctx.fill();
 
             // Draw scores
-            ctx.font = "36px Arial";
-            ctx.fillText(`${player1Score} - ${player2Score}`, canvas.width / 2 - 30, 50);
+            ctx.font = "24px Arial";
+            ctx.fillText(`${player1Name}: ${player1Score} - ${player2Name}: ${player2Score}`, canvas.width / 2 - 100, 50);
         }
 
         function gameLoop() {
@@ -141,13 +160,18 @@
         }
 
         function startGame(mode) {
+            player1Name = document.getElementById("player1Name").value || "Player 1";
+            player2Name = document.getElementById("player2Name").value || (mode === "AI" ? "AI" : "Player 2");
             gameMode = mode;
             resetGame();
             displayScores();
+            nameInputDiv.classList.add("hidden");
+            canvas.classList.remove("hidden");
             gameLoop();
         }
     </script>
 </body>
 </html>
+
 
 
